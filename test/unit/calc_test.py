@@ -2,11 +2,15 @@ import unittest
 from unittest.mock import patch
 import pytest
 
-from app.calc import Calculator
+from app.calc import Calculator, InvalidPermissions
 
 
 def mocked_validation(*args, **kwargs):
     return True
+
+
+def mocked_validation_false(*args, **kwargs):
+    return False
 
 
 @pytest.mark.unit
@@ -23,6 +27,11 @@ class TestCalculate(unittest.TestCase):
     def test_divide_method_returns_correct_result(self):
         self.assertEqual(1, self.calc.divide(2, 2))
         self.assertEqual(1.5, self.calc.divide(3, 2))
+
+    def test_substract_method_returns_correct_result(self):
+        self.assertEqual(0, self.calc.substract(2, 2))
+        self.assertEqual(5, self.calc.substract(10, 5))
+        self.assertEqual(-1, self.calc.substract(2, 3))
 
     def test_add_method_fails_with_nan_parameter(self):
         self.assertRaises(TypeError, self.calc.add, "2", 2)
@@ -50,6 +59,65 @@ class TestCalculate(unittest.TestCase):
         self.assertEqual(0, self.calc.multiply(1, 0))
         self.assertEqual(0, self.calc.multiply(-1, 0))
         self.assertEqual(-2, self.calc.multiply(-1, 2))
+
+    @patch('app.util.validate_permissions', side_effect=mocked_validation_false, create=True)
+    def test_multiply_method_fails_without_permissions(self, _validate_permissions):
+        self.assertRaises(InvalidPermissions, self.calc.multiply, 2, 2)
+
+    def test_multiply_method_fails_with_nan_parameter(self):
+        self.assertRaises(TypeError, self.calc.multiply, "2", 2)
+        self.assertRaises(TypeError, self.calc.multiply, 2, "2")
+        self.assertRaises(TypeError, self.calc.multiply, "2", "2")
+
+    def test_substract_method_fails_with_nan_parameter(self):
+        self.assertRaises(TypeError, self.calc.substract, "2", 2)
+        self.assertRaises(TypeError, self.calc.substract, 2, "2")
+        self.assertRaises(TypeError, self.calc.substract, object(), object())
+
+    def test_power_method_returns_correct_result(self):
+        self.assertAlmostEqual(8, self.calc.power(2, 3))
+        self.assertAlmostEqual(1, self.calc.power(5, 0))
+        self.assertAlmostEqual(0.25, self.calc.power(2, -2))
+
+    def test_power_method_fails_with_nan_parameter(self):
+        self.assertRaises(TypeError, self.calc.power, "2", 2)
+        self.assertRaises(TypeError, self.calc.power, 2, "2")
+        self.assertRaises(TypeError, self.calc.power, "2", "2")
+
+    def test_sqrt_method_returns_correct_result(self):
+        self.assertEqual(3, self.calc.sqrt(9))
+        self.assertAlmostEqual(4.5, self.calc.sqrt(20.25), delta=0.000001)
+
+    def test_sqrt_method_fails_with_negative_number(self):
+        self.assertRaises(TypeError, self.calc.sqrt, -1)
+        self.assertRaises(TypeError, self.calc.sqrt, -0.0001)
+
+    def test_sqrt_method_fails_with_nan_parameter(self):
+        self.assertRaises(TypeError, self.calc.sqrt, "4")
+        self.assertRaises(TypeError, self.calc.sqrt, None)
+
+    def test_log10_method_returns_correct_result(self):
+        self.assertEqual(0, self.calc.log10(1))
+        self.assertAlmostEqual(2, self.calc.log10(100), delta=0.000001)
+
+    def test_log10_method_fails_with_non_positive_number(self):
+        self.assertRaises(TypeError, self.calc.log10, 0)
+        self.assertRaises(TypeError, self.calc.log10, -10)
+
+    def test_log10_method_fails_with_nan_parameter(self):
+        self.assertRaises(TypeError, self.calc.log10, "10")
+        self.assertRaises(TypeError, self.calc.log10, object())
+
+    def test_validate_operand_accepts_numbers(self):
+        Calculator.validate_operand(1)
+        Calculator.validate_operand(3.5)
+
+    def test_validate_operand_rejects_invalid(self):
+        self.assertRaises(TypeError, Calculator.validate_operand, "a")
+        self.assertRaises(TypeError, Calculator.validate_operand, None)
+
+    def test_validate_operands_rejects_invalid(self):
+        self.assertRaises(TypeError, Calculator.validate_operands, 1, "b")
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -1,11 +1,12 @@
 import http.client
 import os
 import unittest
+from urllib.error import HTTPError
 from urllib.request import urlopen
 
 import pytest
 
-BASE_URL = os.environ.get("BASE_URL")
+BASE_URL = os.environ.get("BASE_URL", "http://127.0.0.1:3000")
 DEFAULT_TIMEOUT = 2  # in secs
 
 
@@ -21,3 +22,87 @@ class TestApi(unittest.TestCase):
         self.assertEqual(
             response.status, http.client.OK, f"Error en la petición API a {url}"
         )
+
+    def test_api_add_invalid_operand_returns_bad_request(self):
+        url = f"{BASE_URL}/calc/add/a/2"
+        with self.assertRaises(HTTPError) as context:
+            urlopen(url, timeout=DEFAULT_TIMEOUT)
+        self.assertEqual(http.client.BAD_REQUEST, context.exception.code)
+
+    def test_api_substract(self):
+        url = f"{BASE_URL}/calc/substract/5/3"
+        response = urlopen(url, timeout=DEFAULT_TIMEOUT)
+        self.assertEqual(
+            response.status, http.client.OK, f"Error en la petición API a {url}"
+        )
+
+    def test_api_substract_invalid_operand_returns_bad_request(self):
+        url = f"{BASE_URL}/calc/substract/5/test"
+        with self.assertRaises(HTTPError) as context:
+            urlopen(url, timeout=DEFAULT_TIMEOUT)
+        self.assertEqual(http.client.BAD_REQUEST, context.exception.code)
+
+    def test_api_multiply(self):
+        url = f"{BASE_URL}/calc/multiply/3/2"
+        response = urlopen(url, timeout=DEFAULT_TIMEOUT)
+        self.assertEqual(
+            response.status, http.client.OK, f"Error en la petición API a {url}"
+        )
+
+    def test_api_multiply_invalid_operand_returns_bad_request(self):
+        url = f"{BASE_URL}/calc/multiply/three/2"
+        with self.assertRaises(HTTPError) as context:
+            urlopen(url, timeout=DEFAULT_TIMEOUT)
+        self.assertEqual(http.client.BAD_REQUEST, context.exception.code)
+
+    def test_api_divide(self):
+        url = f"{BASE_URL}/calc/divide/6/2"
+        response = urlopen(url, timeout=DEFAULT_TIMEOUT)
+        self.assertEqual(
+            response.status, http.client.OK, f"Error en la petición API a {url}"
+        )
+
+    def test_api_divide_by_zero_returns_bad_request(self):
+        url = f"{BASE_URL}/calc/divide/1/0"
+        with self.assertRaises(HTTPError) as context:
+            urlopen(url, timeout=DEFAULT_TIMEOUT)
+        self.assertEqual(http.client.BAD_REQUEST, context.exception.code)
+
+    def test_api_power(self):
+        url = f"{BASE_URL}/calc/power/2/3"
+        response = urlopen(url, timeout=DEFAULT_TIMEOUT)
+        self.assertEqual(
+            response.status, http.client.OK, f"Error en la petición API a {url}"
+        )
+
+    def test_api_power_invalid_operand_returns_bad_request(self):
+        url = f"{BASE_URL}/calc/power/invalid/2"
+        with self.assertRaises(HTTPError) as context:
+            urlopen(url, timeout=DEFAULT_TIMEOUT)
+        self.assertEqual(http.client.BAD_REQUEST, context.exception.code)
+
+    def test_api_sqrt(self):
+        url = f"{BASE_URL}/calc/sqrt/9"
+        response = urlopen(url, timeout=DEFAULT_TIMEOUT)
+        self.assertEqual(
+            response.status, http.client.OK, f"Error en la petición API a {url}"
+        )
+
+    def test_api_sqrt_negative_returns_bad_request(self):
+        url = f"{BASE_URL}/calc/sqrt/-1"
+        with self.assertRaises(HTTPError) as context:
+            urlopen(url, timeout=DEFAULT_TIMEOUT)
+        self.assertEqual(http.client.BAD_REQUEST, context.exception.code)
+
+    def test_api_log10(self):
+        url = f"{BASE_URL}/calc/log10/100"
+        response = urlopen(url, timeout=DEFAULT_TIMEOUT)
+        self.assertEqual(
+            response.status, http.client.OK, f"Error en la petición API a {url}"
+        )
+
+    def test_api_log10_non_positive_returns_bad_request(self):
+        url = f"{BASE_URL}/calc/log10/0"
+        with self.assertRaises(HTTPError) as context:
+            urlopen(url, timeout=DEFAULT_TIMEOUT)
+        self.assertEqual(http.client.BAD_REQUEST, context.exception.code)

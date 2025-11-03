@@ -6,7 +6,7 @@ import time
 import pytest
 from zapv2 import ZAPv2
 
-TARGET_URL = os.environ.get("TARGET_URL")
+TARGET_URL = os.environ.get("TARGET_URL", "http://127.0.0.1:3000")
 ZAP_API_URL = os.environ.get("ZAP_API_URL")
 ZAP_API_KEY = os.environ.get("ZAP_API_KEY")
 DEFAULT_WAIT = 2  # in secs
